@@ -386,7 +386,9 @@ def score_config(index, label, k=10):
     ok = "OK " if r >= TARGET else "   "
     print(f"{ok}{label:<44} recall {r:.4f}  {t.median_ms:6.3f} ms  "
           f"{bytes_human(index.total_bytes):>9}")
-    return {"label": label, "recall": r, "ms": t.median_ms, "bytes": index.total_bytes}
+    # keep the results as scored: the index object may be retuned afterwards
+    return {"label": label, "recall": r, "ms": t.median_ms, "bytes": index.total_bytes,
+            "run": index.search(queries, k).to_run(c, qids)}
 
 
 results = []
@@ -410,11 +412,9 @@ best = min((r for r in results if r["recall"] >= TARGET),
            key=lambda r: r["ms"], default=results[0])
 print(f"best config: {best['label']}  (index recall {best['recall']:.4f})\n")
 
-hnsw.ef = 64
 comparison = {
     "exact (ceiling)": metrics.evaluate(run_exact, c.qrels, ks=(10,)),
-    "hnsw ef=64": metrics.evaluate(hnsw.search(queries, 10).to_run(c, qids),
-                                   c.qrels, ks=(10,)),
+    best["label"]: metrics.evaluate(best["run"], c.qrels, ks=(10,)),
 }
 hnsw.ef = 8
 comparison["hnsw ef=8 (sloppy)"] = metrics.evaluate(
