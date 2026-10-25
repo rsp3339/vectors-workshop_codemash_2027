@@ -167,7 +167,7 @@ runs["dense"] = {qids[i]: c.ids(dense_res[i][0][:K]) for i in range(len(qids))}
 runs["bm25"] = {qids[i]: c.ids(bm25_res[i][0][:K]) for i in range(len(qids))}
 
 # RRF k=1 — Lab 3 showed k=60 is not always right; NFCorpus has many relevant
-# documents per query, so this time the damping should actually help. Check both.
+# documents per query, so the damping that hurt there might help here. Check both.
 for kc in (1, 60):
     runs[f"hybrid rrf k={kc}"] = {
         qids[i]: c.ids(fusion.rrf([dense_res[i], bm25_res[i]], k_const=kc)[:K])
@@ -178,11 +178,26 @@ for name, run in runs.items():
     s = metrics.evaluate(run, c.qrels, ks=(K,))
     print(f"  {name:<18} ndcg@{K} {s[f'ndcg@{K}']:.4f}  recall@{K} {s[f'recall@{K}']:.4f}")
 
+
+def compare(base_name, cand_name, seed=11):
+    a = metrics.per_query(runs[base_name], c.qrels, "ndcg", K)
+    b = metrics.per_query(runs[cand_name], c.qrels, "ndcg", K)
+    boot = metrics.bootstrap_delta(a, b, n_resamples=2000, seed=seed)
+    lead = f"{cand_name} - {base_name}"
+    print(f"  {metrics.format_delta(boot, f'Δ nDCG@{K} ({lead})')}")
+    return boot
+
+
+print("\nis either k actually better here?")
+compare("hybrid rrf k=1", "hybrid rrf k=60")
+
 # %% [markdown]
 # **Note what just happened with `k`.** On SciFact (≈1 relevant document per
-# query) `k=1` won. Here, with 38 relevant documents per query, the damping that
-# hurt us there should help. The right value is a property of your corpus, not of
-# the algorithm.
+# query) `k=1` won by about 2 nDCG points. Here, with 38 relevant documents per
+# query, that advantage is gone — and the interval says neither value is
+# measurably better. The default that cost points on one corpus costs nothing
+# on another. The right value is a property of your corpus, not of the
+# algorithm, and "no difference" is a result too.
 
 # %% [markdown]
 # ## 4 · Reranking
@@ -391,15 +406,6 @@ if missing:
 # The leaderboard is a claim. Back it with an interval.
 
 # %%
-def compare(base_name, cand_name, seed=11):
-    a = metrics.per_query(runs[base_name], c.qrels, "ndcg", K)
-    b = metrics.per_query(runs[cand_name], c.qrels, "ndcg", K)
-    boot = metrics.bootstrap_delta(a, b, n_resamples=2000, seed=seed)
-    lead = f"{cand_name} - {base_name}"
-    print(f"  {metrics.format_delta(boot, f'Δ nDCG@{K} ({lead})')}")
-    return boot
-
-
 print("the change that WON the leaderboard:")
 b_rerank = compare("hybrid rrf k=60", "hybrid + rerank")
 

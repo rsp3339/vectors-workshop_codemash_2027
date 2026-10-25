@@ -280,9 +280,10 @@ On NFCorpus, graded judgements, 323 queries:
 | chunked sentence-512 | 0.1610 | 0.3345 | 0.5270 |
 | chunked fixed-256 | 0.1552 | 0.3090 | 0.4822 |
 
-**The `k` lesson reverses, and that's the point.** On SciFact (~1 relevant
-document per query) `k=1` beat `k=60`. Here, with 38 relevant per query, `k=60`
-edges ahead on nDCG. The right value is a property of the corpus, not of RRF.
+**The `k` advantage disappears, and that's the point.** On SciFact (~1 relevant
+document per query) `k=1` beat `k=60` by ~2 nDCG points. Here, with 38 relevant
+per query, the difference is +0.0011 for `k=60`, 95% CI [−0.0072, +0.0095] — not
+significant. The right value is a property of the corpus, not of RRF.
 
 **Sentence chunking helps, fixed-size chunking hurts.** Same corpus, same
 retriever: `sentence-512` cuts 0% of chunks mid-sentence and gains nDCG over
