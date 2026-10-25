@@ -155,7 +155,7 @@ print("\nSame two documents, both retrieved, only the order differs.")
 dense = indexes.ExactIndex(docs)
 bm25 = sparse.BM25Index(c.texts)
 
-with stopwatch("dense retrieval"):
+with stopwatch("dense retrieval") as sw_dense:
     dense_res = [(r.ids[0], r.scores[0])
                  for r in (dense.search(qvecs[i][None, :], CANDIDATES)
                            for i in range(len(qids)))]
@@ -223,8 +223,9 @@ print(f"cross-encoder throughput: {rate:.0f} pairs/sec single-threaded")
 print(f"  this corpus, depth {RERANK_DEPTH}, {len(qids)} queries "
       f"= {len(qids) * RERANK_DEPTH:,} pairs "
       f"= {len(qids) * RERANK_DEPTH / rate / 60:.0f} min")
-print("  ...which is why the scores are precomputed. Compare that to the 0.04s")
-print("  the bi-encoder took for the whole corpus.")
+print("  ...which is why the scores are precomputed. Compare that to section 3:")
+print(f"  dense retrieval searched all {len(c):,} documents for {len(qids)} queries "
+      f"in {sw_dense.seconds:.2f}s.")
 
 with stopwatch(f"rerank {len(qids)} x {RERANK_DEPTH}"):
     reranked = reranker.rerank_all(
@@ -524,9 +525,10 @@ print(answer(jq[qid], context, [c.doc_ids[r] for r in rows]))
 #    establish it on 323 queries — while a smaller-looking chunking change is
 #    solid. Report what you can defend.
 # 6. **Reranking is expensive in a way bi-encoders are not.** You measured the
-#    throughput: the whole corpus embeds in a fraction of a second, and a few
-#    thousand cross-encoder pairs take minutes. That asymmetry is exactly why the
-#    funnel has the shape it has.
+#    throughput: with the corpus embedded once ahead of time, dense retrieval
+#    searches every document for every query in a fraction of a second, while a
+#    few thousand cross-encoder pairs take minutes. That asymmetry is exactly why
+#    the funnel has the shape it has.
 #
 # ### Take this home
 #
