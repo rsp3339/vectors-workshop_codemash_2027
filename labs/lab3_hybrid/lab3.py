@@ -1,5 +1,5 @@
 # %% [markdown]
-# # Lab 3 — Hybrid search, and why RRF beats blending scores
+# # Lab 3 — Hybrid search: fusing by score versus by rank
 #
 # **30 minutes.** You will:
 #
@@ -64,9 +64,11 @@ with stopwatch(f"dense: top-{CANDIDATES} for {len(qids)} queries"):
 with stopwatch(f"bm25:  top-{CANDIDATES} for {len(qids)} queries"):
     bm25_res = [bm25.search(t, CANDIDATES) for t in qtexts]
 
+# BM25 can only return documents sharing a query term, so a list can come back short
+short = sum(1 for r in bm25_res if len(r[0]) < CANDIDATES)
 print(f"\ndense returns {np.mean([len(r[0]) for r in dense_res]):.0f} candidates/query")
 print(f"bm25  returns {np.mean([len(r[0]) for r in bm25_res]):.0f} candidates/query "
-      f"(fewer — many documents share no query terms at all)")
+      f"({short} of {len(qids)} queries matched fewer than {CANDIDATES} documents)")
 
 # %% [markdown]
 # ### Look at one query side by side
@@ -127,7 +129,8 @@ for d, q in diffs[-3:]:
     print(f"  Δ nDCG {d:+.3f}   {jq[q][:95]}")
 
 # %% [markdown]
-# **That split is the whole argument.** Roughly a third of queries go each way.
+# **That split is the whole argument.** Each retriever wins about a quarter of
+# the queries outright, and they tie on the rest.
 # You cannot know in advance which kind a user will type, so you cannot pick one
 # retriever — you have to run both and combine them well.
 #
