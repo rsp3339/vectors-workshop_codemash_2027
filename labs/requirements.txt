@@ -1,0 +1,19 @@
+# Workshop labs — CPU only, no GPU, no API key.
+#
+# IMPORTANT for Linux and Windows: plain `pip install` pulls the CUDA build of
+# torch, which is several GB you will never use. Install the CPU wheel first:
+#
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements.txt
+#
+# macOS (Intel or Apple Silicon) already gets a CPU-only wheel by default.
+
+numpy>=1.26
+faiss-cpu>=1.8.0
+sentence-transformers>=3.0.0
+rank-bm25>=0.2.2
+scikit-learn>=1.4
+matplotlib>=3.8
+
+# Local (non-Colab) notebook host. Skip if you use VS Code or Colab.
+jupyterlab>=4.0

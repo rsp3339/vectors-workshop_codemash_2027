@@ -1,0 +1,23 @@
+# Publish labs/ only. Everything else here is either private CFP material,
+# superseded, or regenerable.
+
+# private / not for publication
+codemash_submission.md
+.claude/
+
+# superseded workshop material
+vector-academy/
+vector-academy-v4.tar
+workshop_slides.pptx
+
+# the presenter deck — contains speaker notes; publish deliberately, not by default
+vector-deck/
+
+# regenerable
+labs/.venv/
+labs/data/
+labs/workshop-data.tar.gz
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
