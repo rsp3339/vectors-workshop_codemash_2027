@@ -95,6 +95,10 @@ s_sim = re.search(sim, suspect)
 check("lab4 genuine miss is closer to its judgements than the suspect one",
       bool(g_sim and s_sim) and float(g_sim.group(1)) > float(s_sim.group(1)),
       f"{g_sim and g_sim.group(1)} vs {s_sim and s_sim.group(1)}")
+top = re.search(r"our top result has similarity ([+-]?\d\.\d{3})", genuine)
+check("lab4 genuine miss: judged document beats what we returned",
+      bool(g_sim and top) and float(g_sim.group(1)) > float(top.group(1)),
+      f"judged {g_sim and g_sim.group(1)} vs returned {top and top.group(1)}")
 check("lab4 does not blame retrieval for the suspect judgement",
       bool(suspect) and "No prompt engineering fixes this" not in suspect)
 check("lab4 triage summary counts judged-relevant documents",

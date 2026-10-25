@@ -374,32 +374,75 @@ for mode in ORDER:
     print(f"{mode:<22}{n:>9}{n / total * 100:>7.1f}%   {FIX[mode]}")
 
 broken = sum(counts.get(m, 0) for m in ORDER[:3])
-print(f"\n{broken} of {total} queries ({broken / total * 100:.0f}%) never got the right")
-print("document in front of the model. For those, no amount of prompt engineering")
-print("helps — and all three causes are fixable in the retrieval layer you spent")
-print("three modules learning to tune.")
+print(f"\n{broken} of {total} queries ({broken / total * 100:.0f}%) never got a judged-relevant")
+print("document in front of the model. Where the judgement is sound, no amount of")
+print("prompt engineering helps — all three causes are fixable in the retrieval layer")
+print("you spent three modules learning to tune. Where it isn't, the golden set is")
+print("what needs fixing, which is why you read failures before you fix them.")
 print(f"\nThe other {total - broken} had a good document in the context. If those")
 print("answers are still wrong, THAT is when 'the model hallucinated' is a")
 print("diagnosis rather than a shrug.")
 
 # %% [markdown]
-# ### Look at one actual failure
+# ### Look at two actual failures — and read them before you fix anything
+#
+# "Context missing" means no judged-relevant document was retrieved. That has two
+# very different causes: the retriever missed a document it should have found,
+# or the judgement itself is doubtful. Compare each query's similarity to its
+# nearest judged-relevant document with its similarity to what we returned,
+# then read one from each end.
+#
+# Similarity here comes from the same embedding model that did the retrieving,
+# so this is a heuristic for where to look, not a verdict. Reading is the verdict.
 
 # %%
+def closest_judged(qid):
+    """(similarity, row) of the judged-relevant document nearest the query."""
+    i = qids.index(qid)
+    rows = [c.pos(d) for d, g in c.qrels[qid].items() if g > 0]
+    sims = docs[rows] @ qvecs[i]
+    j = int(np.argmax(sims))
+    return float(sims[j]), rows[j]
+
+
+def returned_sim(qid):
+    """Similarity of the query to our top-ranked result."""
+    i = qids.index(qid)
+    return float(docs[final_pool[i][0]] @ qvecs[i])
+
+
+def show_miss(qid, heading):
+    i = qids.index(qid)
+    sim, row = closest_judged(qid)
+    n_rel = sum(1 for g in c.qrels[qid].values() if g > 0)
+    print(f"{heading}")
+    print(f'  query [{qid}]: "{jq[qid]}"')
+    print(f"  {n_rel} relevant documents, none in the top {RERANK_DEPTH}; the "
+          f"closest relevant document has similarity {sim:+.3f}, "
+          f"our top result has similarity {returned_sim(qid):+.3f}\n")
+    print("  what we returned instead:")
+    for r, ret in enumerate(final_pool[i][:3], start=1):
+        print(f"    {r}. {c.titles[ret][:68]}")
+    print("\n  the closest document the golden set says we should have found:")
+    print(f"       {c.titles[row][:68]}\n")
+
+
 missing = [q for q, d in diagnosis.items() if d == "context missing"]
 if missing:
-    qid = missing[0]
-    i = qids.index(qid)
-    gold = {d: g for d, g in c.qrels[qid].items() if g > 0}
-    print(f'query [{qid}]: "{jq[qid]}"')
-    print(f"  {len(gold)} relevant documents, none in the top {RERANK_DEPTH}\n")
-    print("  what we returned instead:")
-    for r, row in enumerate(final_pool[i][:3], start=1):
-        print(f"    {r}. {c.titles[row][:68]}")
-    print("\n  what we should have found:")
-    for d in list(gold)[:3]:
-        print(f"       {c.titles[c.pos(d)][:68]}")
-    print("\n  No prompt engineering fixes this. The document was never retrieved.")
+    gap = {q: closest_judged(q)[0] - returned_sim(q) for q in missing}
+    closer = sum(1 for g in gap.values() if g > 0)
+    print(f"{closer} of {len(missing)} missed queries have a judged document closer to")
+    print("the query than the one we ranked first.\n")
+
+    show_miss(max(missing, key=gap.get),
+              "a genuine miss — the judged document is closer than what we returned:")
+    print("  No prompt engineering fixes this. The document was never retrieved.\n")
+
+    show_miss(min(missing, key=lambda q: closest_judged(q)[0]),
+              "a suspect judgement — the judged document looks unrelated:")
+    print("  Before blaming the retriever, read the judgement. A golden set built")
+    print("  from citation links counts documents like this as relevant, and no")
+    print("  retriever should be tuned to find them.")
 
 # %% [markdown]
 # ## 8 · TASK-adjacent: prove the improvement

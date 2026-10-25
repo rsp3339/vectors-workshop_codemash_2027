@@ -318,8 +318,13 @@ Where the first relevant document actually landed, across all 323 queries:
 | context overflow | 16 | 5.0% |
 | retrieval succeeded | 213 | 65.9% |
 
-**110 of 323 queries (34%) never got a relevant document in front of the model.**
-No prompt engineering fixes those. Note the fourth bucket's honest name — we
+**110 of 323 queries (34%) never got a judged-relevant document in front of the
+model.** That is an upper bound on retrieval failure, not a count of it. Only 6
+of the 67 "context missing" queries have a judged document closer to the query
+(by the same embedding model) than the one ranked first. Lab 4 shows the clearest
+of those ("dietary scoring") beside a suspect judgement ("okra", whose only
+relevant document is about steam-cooking greens). Read failures before fixing
+them. Note the fourth bucket's honest name — we
 never generated answers for those queries, so "generator failure" would be a
 claim we cannot support; all we know is retrieval did its job.
 
