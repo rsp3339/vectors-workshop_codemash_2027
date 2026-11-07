@@ -1,9 +1,10 @@
 """
 wslib — shared plumbing for the four workshop labs.
 
-One corpus, one embedding cache, one set of metrics, shared by every lab, so the
-recall you measure in Lab 2 is directly comparable to the recall you improve in
-Lab 4.
+One corpus loader, one embedding cache, one set of metrics, shared by every lab.
+Labs 1-3 use SciFact, so the recall you measure in Lab 2 is directly comparable
+to the recall you improve in Lab 3. Lab 4 switches to NFCorpus for its graded
+judgements.
 
     from wslib import chunking, corpus, embed, fusion, indexes, metrics
     from wslib import rerank, sparse, timing
