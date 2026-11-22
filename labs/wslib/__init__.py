@@ -43,8 +43,9 @@ import os
 # It has to be the environment, before the first import.
 #
 # The cost is smaller than it looks. Cross-encoder inference still runs at
-# ~1800 pairs/sec single-threaded, and single-threaded faiss is what Lab 2 wants
-# anyway: the QPS numbers it reports claim one thread, and now that is true.
+# ~35 pairs/sec single-threaded (Lab 4 prints its own measurement), and Lab 4
+# reranks from precomputed scores anyway. Single-threaded faiss is what Lab 2
+# wants: the QPS numbers it reports claim one thread, and now that is true.
 #
 # The genuinely clean fix is one shared libomp, which means conda-forge instead
 # of pip — not worth asking 50 laptops to switch package manager.

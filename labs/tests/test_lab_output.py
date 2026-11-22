@@ -104,6 +104,15 @@ check("lab4 does not blame retrieval for the suspect judgement",
 check("lab4 triage summary counts judged-relevant documents",
       re.search(r"never got a judged-relevant\s+document", out) is not None)
 
+measured = re.search(r"cross-encoder throughput: (\d+) pairs/sec", out)
+claimed = re.search(r"~([\d,]+) pairs/sec",
+                    (LABS / "wslib" / "__init__.py").read_text())
+rates = (float(measured.group(1)), float(claimed.group(1).replace(",", ""))) \
+    if measured and claimed else None
+check("wslib's quoted cross-encoder rate is within 1.5x of lab4's",
+      bool(rates) and max(rates) / min(rates) <= 1.5,
+      f"measured {measured and measured.group(1)} vs quoted {claimed and claimed.group(1)}")
+
 print()
 if FAILED:
     print(f"{len(FAILED)} FAILED: {FAILED}")
