@@ -78,8 +78,9 @@ for k, v in ceiling.items():
 #
 # Look at that latency. 5,183 vectors × 384 dimensions is about 8 MB — it fits in
 # cache, and a full scan takes a fraction of a millisecond. **An index barely
-# helps here**, and you should expect HNSW to be maybe 10× faster rather than the
-# 1000× the slides implied at a million vectors.
+# helps here**: at the recall targets you would ship (0.95–0.99), expect HNSW to
+# be only 3–7× faster, and no faster at all by 0.999 — not the 1000× the slides
+# implied at a million vectors.
 #
 # That is not a flaw in the lab, it's the lesson from the "brute force doesn't
 # scale" slide arriving from the other direction: below roughly 100K vectors,

@@ -53,6 +53,18 @@ check("lab2 scores that config against the judgements",
                                            board, re.M) is not None,
       f"looking for a leaderboard row named {best_label!r}")
 
+exact = re.search(r"exact search:\s+([\d.]+) ms median", out)
+target_ms = dict(re.findall(r"recall >= (0\.95|0\.99)0\s+->\s+ef=\s*\d+\s+([\d.]+) ms", out))
+speedups = [float(exact.group(1)) / float(ms) for ms in target_ms.values()] \
+    if exact and len(target_ms) == 2 else []
+for doc in ("lab2_ann_tuning/lab2.py", "README.md"):
+    quoted = re.search(r"(\d+)–(\d+)× faster", (LABS / doc).read_text())
+    lo, hi = map(int, quoted.groups()) if quoted else (None, None)
+    check(f"{doc} quotes the measured HNSW speedup at recall 0.95-0.99",
+          bool(quoted and speedups) and all(lo <= round(s) <= hi for s in speedups),
+          f"quoted {lo}–{hi}x vs measured "
+          + ", ".join(f"{s:.1f}x" for s in speedups))
+
 
 # ── Lab 3: the BM25 candidate-count remark matches the counts ──────────────
 out = run_lab("lab3_hybrid", "lab3.py")

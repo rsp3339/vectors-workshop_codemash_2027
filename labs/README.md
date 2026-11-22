@@ -198,7 +198,8 @@ not the index — which is the bridge into Module 03.
 ### Caveat to state out loud
 
 At 5K vectors the whole corpus is ~8 MB and fits in cache, so exact search runs
-in 0.12 ms and HNSW is only ~10× faster, not 1000×. The corpus is small so the
+in 0.12 ms and HNSW is only 3–7× faster at recall 0.95–0.99 (and no faster by
+0.999), not 1000×. The corpus is small so the
 lab fits in 35 minutes. **Read the shape of the curves, not the absolute
 numbers** — and note this is the "don't add an index below 100K vectors" lesson
 arriving from the other direction.
