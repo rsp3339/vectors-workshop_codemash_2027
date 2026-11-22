@@ -1,6 +1,6 @@
 """
-ABOUTME: Runs each notebook's Colab data cell against a local server that answers 404,
-ABOUTME: and checks the failure is reported by the download, not by a confusing tar error.
+ABOUTME: Checks each notebook's Colab bootstrap: a missing data archive fails at the
+ABOUTME: download rather than in tar, and setup installs openai for Lab 4.
 
 Needs no data cache and no network. Takes a few seconds.
 Run with:  python tests/test_colab_bootstrap.py
@@ -9,6 +9,7 @@ Run with:  python tests/test_colab_bootstrap.py
 import http.server
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -81,6 +82,14 @@ for nb in sorted(LABS.glob("lab*/lab*.ipynb")):
           bool(named), named[0] if named else output.strip()[-80:])
 
 server.shutdown()
+
+for nb in sorted(LABS.glob("lab*/lab*.ipynb")):
+    cells = json.loads(nb.read_text())["cells"]
+    setup = next("".join(c["source"]) for c in cells if c["cell_type"] == "code")
+    install = re.search(r'"pip", "install", "-q",(.*?)\)', setup, re.S)
+    packages = re.findall(r'"([^"]+)"', install.group(1)) if install else []
+    check(f"{nb.name}: Colab setup installs openai for Lab 4's generation step",
+          "openai" in packages, ", ".join(packages))
 
 print()
 if FAILED:

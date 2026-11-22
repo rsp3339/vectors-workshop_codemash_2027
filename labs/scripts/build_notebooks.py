@@ -180,7 +180,7 @@ if root is None:
 
     print("installing dependencies (~40s) ...")
     sh(sys.executable, "-m", "pip", "install", "-q",
-       "faiss-cpu", "sentence-transformers", "rank-bm25")
+       "faiss-cpu", "sentence-transformers", "rank-bm25", "openai")
 
 os.chdir(root)
 if root not in sys.path:
