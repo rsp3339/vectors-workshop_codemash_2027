@@ -412,12 +412,16 @@ for name, (b, a) in board.items():
 # * **Min-max normalisation is scale-invariant too** — it survives ×100
 #   unchanged, and on this corpus it scores highest. That is a real result and we
 #   are not going to hide it.
-# * RRF is close behind, and gets there **without fitting a weight**.
+# * RRF at the default `k=60` fits nothing, and it is ~3 nDCG points behind
+#   min-max — a real gap, not noise (paired bootstrap on these 300 queries:
+#   95% CI [+0.0139, +0.0440]). With `k=1` from section 7 it closes to within
+#   noise of min-max (CI [−0.0055, +0.0197]), but then it has a fitted constant
+#   too.
 #
-# So the honest claim is not "RRF wins". It is: *RRF gets you within a whisker of
-# a tuned blend with nothing to tune and nothing to break.* Whether that trade is
-# worth it depends on how many retrievers you have and how often your score
-# distributions move.
+# So the honest claim is not "RRF wins". It is: *default RRF costs you points
+# against a tuned blend, tuned RRF matches it, and neither has a score scale to
+# break.* Whether that trade is worth it depends on how many retrievers you have
+# and how often your score distributions move.
 #
 # Section 9 shows the thing min-max normalisation does *not* survive.
 
@@ -555,8 +559,9 @@ print(f"RRF with 3 retrievers : ndcg@{K} {s3[f'ndcg@{K}']:.4f}   "
 #    conversion fitted to one pair of distributions; the ×100 destroyed it with no
 #    error message.
 # 4. **RRF is not automatically the best — it's the most robust.** On this corpus
-#    a tuned min-max blend scored slightly higher. RRF got within a whisker with
-#    nothing fitted, and held up under both the ×100 and the outlier injection.
+#    a tuned min-max blend scored highest. Default RRF (`k=60`) trailed it by a
+#    real ~3 points; RRF with `k=1` was within noise of it. Both RRF settings held
+#    up under the ×100 and the outlier injection, and min-max did not.
 # 5. **Defaults are hypotheses.** `k=60` cost us ~2 nDCG points here, because
 #    SciFact has ~1 relevant document per query and damping the head throws away
 #    the confidence you wanted.

@@ -64,6 +64,18 @@ if m:
     check("lab3 short-list count is consistent with the average",
           (short == 0) == (avg == cap), f"avg {avg}, short {short}/{total}")
 
+mm = re.search(r"^linear min-max \(a=0\.5\)\s+[\d.]+\s+([\d.]+)", out, re.M)
+r60 = re.search(r"^RRF k=60\s+[\d.]+\s+([\d.]+)", out, re.M)
+gap = round((float(mm.group(1)) - float(r60.group(1))) * 100) if mm and r60 else None
+for doc in ("lab3_hybrid/lab3.py", "README.md"):
+    text = (LABS / doc).read_text()
+    quoted = re.search(r"~(\d+) nDCG points behind", text)
+    check(f"{doc} quotes the measured min-max lead over RRF k=60",
+          bool(quoted) and int(quoted.group(1)) == gap,
+          f"quoted {quoted and quoted.group(1)} vs measured {gap}")
+    check(f"{doc} does not call untuned RRF within a whisker",
+          "whisker" not in text)
+
 
 # ── Lab 4 ──────────────────────────────────────────────────────────────────
 out = run_lab("lab4_rag_eval", "lab4.py")

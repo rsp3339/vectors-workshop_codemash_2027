@@ -226,9 +226,11 @@ But which fusion method wins depends on what you're robust to:
 
 Three findings worth knowing before you teach this:
 
-1. **RRF does not simply win.** A tuned min-max blend scores slightly higher
-   here. The honest claim is that RRF gets within a whisker with nothing fitted,
-   and is the only method that survives *both* perturbations.
+1. **RRF does not simply win.** A tuned min-max blend scores highest here.
+   Default RRF (`k=60`, nothing fitted) is ~3 nDCG points behind it, and the gap
+   is real: paired bootstrap 95% CI [+0.0139, +0.0440] on 300 queries. RRF with
+   `k=1` is within noise of it (CI [−0.0055, +0.0197]). RRF is the only method
+   that survives *both* perturbations.
 2. **`k=60` is not optimal on SciFact — `k=1` is**, worth ~2 nDCG points. The
    mechanism: `k` damps the head of each list, which is right when several
    documents are relevant, and wrong when there is ~1 relevant document per query
