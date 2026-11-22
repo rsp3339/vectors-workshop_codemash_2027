@@ -31,7 +31,11 @@ SUBDIR = os.environ.get("WORKSHOP_SUBDIR", "labs")
 # users skip the ~8 minute prepare_data step. Upload the archive produced by
 # scripts/make_data_archive.py as a GitHub Release asset and paste its URL here.
 # Leave blank and the bootstrap builds the cache instead.
-DATA_URL = os.environ.get("WORKSHOP_DATA_URL", "")
+DATA_URL = os.environ.get(
+    "WORKSHOP_DATA_URL",
+    "https://github.com/rsp3339/vectors-workshop_codemash_2027/releases/download/"
+    "workshop-data/workshop-data.tar.gz",
+)
 
 
 # ── derived ────────────────────────────────────────────────────────────────
