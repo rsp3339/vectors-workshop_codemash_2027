@@ -25,6 +25,7 @@ def check(label, ok, detail=""):
 
 def run_lab(folder, script):
     env = dict(os.environ, MPLBACKEND="Agg")
+    env.pop("OPENAI_API_KEY", None)   # Lab 4 must take its offline path, not a paid API
     p = subprocess.run([sys.executable, str(LABS / folder / script)],
                        cwd=LABS, env=env, capture_output=True, text=True)
     if p.returncode != 0:
@@ -127,6 +128,21 @@ check("lab4 does not blame retrieval for the suspect judgement",
       bool(suspect) and "No prompt engineering fixes this" not in suspect)
 check("lab4 triage summary counts judged-relevant documents",
       re.search(r"never got a judged-relevant\s+document", out) is not None)
+
+context = out[out.find("context sent to the model:"):]
+starred = re.findall(r"^  \[(\d)\]\*", context, re.M)
+check("lab4 fallback does not call the top passage best-supported",
+      "Best-supported" not in context and "Top-ranked passage (no answer generated)" in context)
+check("lab4 fallback does not claim sources were cited",
+      "Cited sources" not in context and "Context sources:" in context)
+if "1" in starred:
+    check("lab4 adds no unjudged note when passage [1] is judged",
+          "is unjudged" not in context)
+else:
+    note = re.search(r"passage \[1\] is unjudged.*?Judged relevant: (.*)$", context, re.S | re.M)
+    check("lab4 says when the top passage is unjudged, and which ones are judged",
+          note is not None and re.findall(r"\[(\d)\]", note.group(1)) == starred,
+          f"stars {starred}, note {note and note.group(1)!r}")
 
 measured = re.search(r"cross-encoder throughput: (\d+) pairs/sec", out)
 claimed = re.search(r"~([\d,]+) pairs/sec",

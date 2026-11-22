@@ -514,8 +514,9 @@ def answer(query, context, sources):
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         return ("[extractive fallback — no OPENAI_API_KEY set]\n"
-                f"Best-supported passage:\n\n{context.split(chr(10) + chr(10))[0]}\n\n"
-                f"Cited sources: {', '.join(sources)}")
+                "Top-ranked passage (no answer generated):\n\n"
+                f"{context.split(chr(10) + chr(10))[0]}\n\n"
+                f"Context sources: {', '.join(sources)}")
     try:
         from openai import OpenAI
         client = OpenAI(base_url=os.environ.get("LLM_BASE_URL") or None)
@@ -548,6 +549,14 @@ for n, row in enumerate(rows, start=1):
     print(f"  [{n}]{mark} {c.titles[row][:66]}")
 print("  (* = judged relevant)\n")
 print(answer(jq[qid], context, [c.doc_ids[r] for r in rows]))
+
+# Passage [1] is the reranker's top pick, which the golden set may never have
+# assessed. Say so, rather than let it pass for a judged answer.
+judged = [n for n, row in enumerate(rows, start=1) if c.doc_ids[row] in gold]
+if 1 not in judged:
+    print("\nnote: passage [1] is unjudged — nobody assessed it, which is not the same "
+          "as\n      judged wrong (section 1: absent = not judged). Judged relevant: "
+          + (", ".join(f"[{n}]" for n in judged) or "none"))
 
 # %% [markdown]
 # ## What to take away
