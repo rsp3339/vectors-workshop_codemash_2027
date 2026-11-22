@@ -15,5 +15,9 @@ rank-bm25>=0.2.2
 scikit-learn>=1.4
 matplotlib>=3.8
 
+# Lab 4's last cell generates an answer with this when OPENAI_API_KEY is set (any
+# OpenAI-compatible endpoint via LLM_BASE_URL). Without a key it is never imported.
+openai>=1.0
+
 # Local (non-Colab) notebook host. Skip if you use VS Code or Colab.
 jupyterlab>=4.0
