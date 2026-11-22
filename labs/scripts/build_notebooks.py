@@ -96,6 +96,20 @@ def to_notebook(cells: List[Dict]) -> Dict:
 # ── the Colab bootstrap ────────────────────────────────────────────────────
 
 
+# The packages the Colab bootstrap installs; the rest come from Colab's own runtime.
+COLAB_PACKAGES = ("faiss-cpu", "sentence-transformers", "rank-bm25", "openai")
+
+
+def colab_pins() -> List[str]:
+    """COLAB_PACKAGES at the exact versions requirements.txt pins."""
+    pins = {}
+    for line in (ROOT / "requirements.txt").read_text().splitlines():
+        spec = line.split("#")[0].strip()
+        if spec:
+            pins[spec.split("==")[0]] = spec
+    return [pins[name] for name in COLAB_PACKAGES]
+
+
 def bootstrap(repo: str, branch: str, subdir: str, data_url: str) -> str:
     """First two cells of every notebook: get the code, get the data, verify.
 
@@ -105,6 +119,8 @@ def bootstrap(repo: str, branch: str, subdir: str, data_url: str) -> str:
     configured = cfg.is_configured(repo)
     slug = cfg.slug(repo)
     url = cfg.clone_url(repo)
+
+    packages = ", ".join(f'"{spec}"' for spec in colab_pins())
 
     unconfigured_note = "" if configured else (
         "\n# ⚠️  This notebook was generated before the repo URL was set.\n"
@@ -180,7 +196,7 @@ if root is None:
 
     print("installing dependencies (~40s) ...")
     sh(sys.executable, "-m", "pip", "install", "-q",
-       "faiss-cpu", "sentence-transformers", "rank-bm25", "openai")
+       {packages})
 
 os.chdir(root)
 if root not in sys.path:

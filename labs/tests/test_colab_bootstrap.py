@@ -1,6 +1,6 @@
 """
 ABOUTME: Checks each notebook's Colab bootstrap: a missing data archive fails at the
-ABOUTME: download rather than in tar, and setup installs openai for Lab 4.
+ABOUTME: download rather than in tar, and setup installs the pinned packages, openai included.
 
 Needs no data cache and no network. Takes a few seconds.
 Run with:  python tests/test_colab_bootstrap.py
@@ -83,13 +83,19 @@ for nb in sorted(LABS.glob("lab*/lab*.ipynb")):
 
 server.shutdown()
 
+pins = {line.split("#")[0].strip()
+        for line in (LABS / "requirements.txt").read_text().splitlines()} - {""}
+
 for nb in sorted(LABS.glob("lab*/lab*.ipynb")):
     cells = json.loads(nb.read_text())["cells"]
     setup = next("".join(c["source"]) for c in cells if c["cell_type"] == "code")
     install = re.search(r'"pip", "install", "-q",(.*?)\)', setup, re.S)
     packages = re.findall(r'"([^"]+)"', install.group(1)) if install else []
     check(f"{nb.name}: Colab setup installs openai for Lab 4's generation step",
-          "openai" in packages, ", ".join(packages))
+          any(p.split("==")[0] == "openai" for p in packages), ", ".join(packages))
+    check(f"{nb.name}: Colab setup installs the versions requirements.txt pins",
+          bool(packages) and all(p in pins for p in packages),
+          ", ".join(p for p in packages if p not in pins))
 
 print()
 if FAILED:

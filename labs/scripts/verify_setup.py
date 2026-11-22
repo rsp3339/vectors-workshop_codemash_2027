@@ -34,9 +34,9 @@ def main() -> int:
 
     major, minor = sys.version_info[:2]
     if (major, minor) < (3, 10):
-        bad("python >= 3.10", f"you have {major}.{minor}; install 3.11 or 3.12")
-    elif (major, minor) >= (3, 13):
-        print(f"  WARN  python {major}.{minor} is newer than tested (3.11/3.12)")
+        bad("python >= 3.10", f"you have {major}.{minor}; install 3.12")
+    elif (major, minor) != (3, 12):
+        print(f"  WARN  python {major}.{minor}: the pinned versions are tested on 3.12 only")
     else:
         ok("python version", f"{major}.{minor}")
 

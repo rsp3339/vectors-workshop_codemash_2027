@@ -1,23 +1,36 @@
 # Workshop labs — CPU only, no GPU, no API key.
 #
+# Python 3.12. Every version below is pinned to the set the labs and their tests
+# were run against, and each has a 3.12 wheel for Windows x64, Linux x86_64 and
+# Apple Silicon macOS 14+. Intel Macs, macOS 13 or older, and Windows on ARM have
+# no wheel for some of these: use the Colab notebooks instead.
+#
 # IMPORTANT for Linux and Windows: plain `pip install` pulls the CUDA build of
 # torch, which is several GB you will never use. Install the CPU wheel first:
 #
-#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
 #   pip install -r requirements.txt
 #
-# macOS (Intel or Apple Silicon) already gets a CPU-only wheel by default.
+# Apple Silicon macOS already gets a CPU-only wheel by default.
 
-numpy>=1.26
-faiss-cpu>=1.8.0
-sentence-transformers>=3.0.0
-rank-bm25>=0.2.2
-scikit-learn>=1.4
-matplotlib>=3.8
+numpy==2.5.2
+faiss-cpu==1.15.0
+sentence-transformers==6.0.0
+rank-bm25==0.2.2
+scikit-learn==1.9.0
+matplotlib==3.11.1
+
+# Pulled in by sentence-transformers. Pinned because they decide how the models
+# load and what numbers come out.
+torch==2.13.0
+transformers==5.16.1
+tokenizers==0.23.1
+huggingface-hub==1.28.0
+scipy==1.18.1
 
 # Lab 4's last cell generates an answer with this when OPENAI_API_KEY is set (any
 # OpenAI-compatible endpoint via LLM_BASE_URL). Without a key it is never imported.
-openai>=1.0
+openai==3.57.0
 
 # Local (non-Colab) notebook host. Skip if you use VS Code or Colab.
-jupyterlab>=4.0
+jupyterlab==4.6.3

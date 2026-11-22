@@ -20,18 +20,22 @@ labs/
 ## Setup
 
 ```bash
-python3.12 -m venv .venv && source .venv/bin/activate     # 3.11 or 3.12
+python3.12 -m venv .venv && source .venv/bin/activate     # Python 3.12 only
 pip install -r requirements.txt
 python scripts/prepare_data.py --poolings                # SciFact + poolings + MRL (labs 1-3)
 python scripts/prepare_data.py --dataset nfcorpus --all  # NFCorpus + chunks + rerank (lab 4)
 python scripts/verify_setup.py                          # prints SETUP OK
 ```
 
+**Intel Mac, macOS 13 or older, or Windows on ARM:** use the Colab notebooks
+(links in the top-level README).
+Some of the pinned packages have no wheel for those machines.
+
 **Linux / Windows:** install the CPU torch wheel first or pip will pull several GB
 of CUDA you will never use:
 
 ```bash
-pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 ```
 

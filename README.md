@@ -20,18 +20,21 @@ Nothing to install. Run the first cell and it fetches the code and data for you.
 
 ```bash
 cd labs
-python3.12 -m venv .venv && source .venv/bin/activate      # 3.11 or 3.12
+python3.12 -m venv .venv && source .venv/bin/activate      # Python 3.12 only
 pip install -r requirements.txt
 python scripts/prepare_data.py --poolings                  # SciFact  (labs 1-3)
 python scripts/prepare_data.py --dataset nfcorpus --all    # NFCorpus (lab 4)
 python scripts/verify_setup.py                             # prints SETUP OK
 ```
 
+**Intel Mac, macOS 13 or older, or Windows on ARM:** use the Colab links above.
+Some of the pinned packages have no wheel for those machines.
+
 **Linux / Windows:** install the CPU torch wheel first, or pip pulls several GB of
 CUDA you will never use:
 
 ```bash
-pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
 ```
 
 Then open the notebooks in Jupyter or VS Code, or run a lab as a script:
