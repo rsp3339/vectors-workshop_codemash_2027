@@ -8,7 +8,7 @@
 # 3. Sweep `efSearch` and **plot the recall/QPS curve** you saw modelled on the slides
 # 4. Pay the build-time cost of `M` and `efConstruction`
 # 5. Trade memory for accuracy with IVF-PQ
-# 6. **Challenge:** hit recall@10 ≥ 0.95 at the lowest latency you can
+# 6. **Challenge:** hit recall@10 ≥ 0.95 with the smallest index you can
 #
 # Corpus: **BEIR SciFact** — 5,183 scientific abstracts, 300 judged queries.
 # Embeddings are precomputed, so nothing here waits on a model.
@@ -371,11 +371,15 @@ plt.show()
 # %% [markdown]
 # ## 7 · CHALLENGE — post your number
 #
-# **Hit index recall@10 ≥ 0.95 at the lowest median latency you can.**
+# **Hit index recall@10 ≥ 0.95 with the smallest index you can.**
 #
-# Anything is fair: `M`, `efConstruction`, `efSearch`, IVF-PQ parameters, a
-# different `nlist`, `m`, `nbits`. Post `(config, recall, ms)` and we'll build a
-# leaderboard.
+# The score is the index's memory, which is the same on every laptop; latency
+# only breaks ties. Anything is fair: `M`, `efConstruction`, `efSearch`, a
+# different `nlist`, IVF-PQ's `m` and `nbits`. Post `(config, recall, size, ms)`
+# and we'll build a leaderboard.
+#
+# Three entries are already on the board. Exact search is one of them, because
+# brute force is the bar an index has to beat.
 
 # %%
 TARGET = 0.95
@@ -395,12 +399,15 @@ def score_config(index, label, k=10):
 results = []
 hnsw.ef = 64
 results.append(score_config(hnsw, "HNSW M=16 efC=200 ef=64"))
+results.append(score_config(exact, "exact search"))
+ivfpq.nprobe = 8
+results.append(score_config(ivfpq, "IVF-PQ m=48 nbits=8 nprobe=8"))   # tiny, but misses 0.95
 
-# YOUR TURN — try to beat that latency while staying above 0.95.
+# YOUR TURN — shrink the index while staying above 0.95.
 # Some directions worth trying:
-#   indexes.HNSWIndex(docs, M=32, ef_construction=400)   # denser graph, lower ef
-#   indexes.IVFFlatIndex(docs, nlist=128)                # partition without compressing
-#   indexes.IVFPQIndex(docs, nlist=64, m=96, nbits=8)    # finer sub-vectors
+#   indexes.HNSWIndex(docs, M=4, ef_construction=200)    # sparser graph, fewer links per node
+#   indexes.IVFFlatIndex(docs, nlist=32)                 # partition without compressing
+#   indexes.IVFPQIndex(docs, nlist=71, m=96, nbits=8)    # more sub-vectors: more bytes, more recall
 
 # %% [markdown]
 # ## 8 · The number that matters
@@ -410,8 +417,9 @@ results.append(score_config(hnsw, "HNSW M=16 efC=200 ef=64"))
 
 # %%
 best = min((r for r in results if r["recall"] >= TARGET),
-           key=lambda r: r["ms"], default=results[0])
-print(f"best config: {best['label']}  (index recall {best['recall']:.4f})\n")
+           key=lambda r: (r["bytes"], r["ms"]), default=results[0])
+print(f"best config: {best['label']}  (index recall {best['recall']:.4f}, "
+      f"{bytes_human(best['bytes'])}, {best['ms']:.3f} ms)\n")
 
 comparison = {
     "exact (ceiling)": metrics.evaluate(run_exact, c.qrels, ks=(10,)),
@@ -436,7 +444,11 @@ print(metrics.leaderboard(comparison, ks=(10,)))
 #    read the parameter off the curve — never the other way round.
 # 3. **Partitioning loss is recoverable, quantization loss is not.** nprobe buys
 #    back the first; nothing buys back the second.
-# 4. **Index recall is not retrieval quality.** You can push index recall to
+# 4. **Bytes are paid for in latency.** If your smallest index is IVF-PQ, put
+#    its latency next to exact search's from section 1. At 5,000 vectors every
+#    byte you saved cost you speed, which is the "don't index below 100K"
+#    lesson again.
+# 5. **Index recall is not retrieval quality.** You can push index recall to
 #    1.000 and still only reach recall@10 ≈ 0.79 against the golden set, because
 #    that ceiling belongs to the *embedding model*.
 #

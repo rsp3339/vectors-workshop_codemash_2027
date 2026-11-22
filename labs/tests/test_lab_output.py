@@ -54,6 +54,19 @@ check("lab2 scores that config against the judgements",
                                            board, re.M) is not None,
       f"looking for a leaderboard row named {best_label!r}")
 
+UNITS = {"B": 1, "KB": 1024, "MB": 1024 ** 2, "GB": 1024 ** 3}
+entries = [(label.strip(), float(ms), float(size) * UNITS[unit])
+           for label, ms, size, unit in re.findall(
+               r"^OK (.+?)\s+recall \d\.\d{4}\s+([\d.]+) ms\s+([\d.]+) (B|KB|MB|GB)$", out, re.M)]
+smallest = min(entries, key=lambda e: (e[2], e[1]))[0] if entries else None
+check("lab2 challenge winner is the smallest index clearing the target",
+      len(entries) >= 2 and best_label == smallest,
+      f"printed {best_label!r}, smallest qualifying {smallest!r} of {len(entries)}")
+lab2_text = (LABS / "lab2_ann_tuning" / "lab2.py").read_text()
+check("lab2 text states the smallest-index rule, not the latency one",
+      "smallest index" in lab2_text and "lowest latency" not in lab2_text
+      and "lowest median latency" not in lab2_text)
+
 exact = re.search(r"exact search:\s+([\d.]+) ms median", out)
 target_ms = dict(re.findall(r"recall >= (0\.95|0\.99)0\s+->\s+ef=\s*\d+\s+([\d.]+) ms", out))
 speedups = [float(exact.group(1)) / float(ms) for ms in target_ms.values()] \
