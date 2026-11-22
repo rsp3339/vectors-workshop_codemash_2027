@@ -114,6 +114,7 @@ gh release create workshop-data workshop-data.tar.gz --notes 'lab data cache'
 
 # 3. regenerate the notebooks with those values baked in
 python scripts/build_notebooks.py
+python tests/test_colab_bootstrap.py   # a bad DATA_URL fails at the download
 ```
 
 Step 3 prints the four Colab links for the setup slide and the pre-work email.

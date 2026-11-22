@@ -204,7 +204,7 @@ if not need:
 elif DATA_URL:
     print("downloading prebuilt data cache ...")
     os.makedirs("data", exist_ok=True)
-    subprocess.run(["curl", "-sSL", "-o", "/tmp/wsdata.tar.gz", DATA_URL], check=True)
+    subprocess.run(["curl", "-fsSL", "-o", "/tmp/wsdata.tar.gz", DATA_URL], check=True)
     subprocess.run(["tar", "-xzf", "/tmp/wsdata.tar.gz"], check=True)
     print("  done")
 else:
